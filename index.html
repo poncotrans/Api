@@ -5,14 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile Check</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Profile Information Checker</h1>
+        <input type="text" id="apiKeyInput" placeholder="Enter API Key" />
         <button id="checkProfileBtn">Check Profile</button>
         <div id="status"></div>
     </div>
 
-    <script src="script/script.js"></script>
+    <script src="pvt/api.js"></script>
+    <script>
+        document.getElementById('checkProfileBtn').addEventListener('click', function() {
+            const apiKey = document.getElementById('apiKeyInput').value; // Mendapatkan API Key dari input
+            if (!apiKey) {
+                alert('Please enter your API Key.');
+                return;
+            }
+
+            const signature = md5(apiKey + 'Profile'); // Membuat signature
+
+            fetch('https://api.paydisini.co.id/v1/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    key: apiKey,
+                    request: 'profile',
+                    signature: signature
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const statusElement = document.getElementById('status');
+                if (data.success) {
+                    statusElement.innerHTML = 'Success ✅';
+                    statusElement.style.color = 'green';
+                } else {
+                    statusElement.innerHTML = 'Failed ❌';
+                    statusElement.style.color = 'red';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('status').innerHTML = 'Error ❌';
+                document.getElementById('status').style.color = 'red';
+            });
+        });
+
+        // Fungsi untuk membuat hash MD5 ada di api.js
+    </script>
 </body>
 </html>
